@@ -7,6 +7,7 @@ const db = window.supabase.createClient(
     SUPABASE_ANON_KEY
 );
 
+// USER ACCESS CHECK
 async function loadUserDashboard() {
     const { data: { session }, error: sessionError } =
         await db.auth.getSession();
@@ -23,7 +24,7 @@ async function loadUserDashboard() {
         .single();
 
     if (error || !profile) {
-        await db.auth.signOut();
+        await db.auth.signOut({ scope: "local" });
         window.location.replace("login.html");
         return;
     }
@@ -34,7 +35,7 @@ async function loadUserDashboard() {
     }
 
     if (profile.role !== "user") {
-        await db.auth.signOut();
+        await db.auth.signOut({ scope: "local" });
         window.location.replace("login.html");
         return;
     }
@@ -53,21 +54,31 @@ async function loadUserDashboard() {
 async function logout() {
     const button = document.getElementById("logoutBtn");
 
-    if (button) button.disabled = true;
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Logging out...";
+    }
 
-    const { error } = await db.auth.signOut();
+    const { error } = await db.auth.signOut({
+        scope: "local"
+    });
 
     if (error) {
         console.error("Logout error:", error);
-        alert("Logout failed. Please try again.");
+        alert("Unable to logout. Please try again.");
 
-        if (button) button.disabled = false;
+        if (button) {
+            button.disabled = false;
+            button.textContent = "Logout";
+        }
+
         return;
     }
 
     window.location.replace("login.html");
 }
 
+// START
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("logoutBtn")
         ?.addEventListener("click", logout);

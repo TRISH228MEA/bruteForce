@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureWatch | Security Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h2>🛡️ SecureWatch</h2>
+        <p class="side-label">SECURITY MONITOR</p>
+
+        <a class="active" href="#dashboard">Dashboard</a>
+        <a href="#attempts">Login Attempts</a>
+        <a href="#suspicious">Suspicious IPs</a>
+        <a href="#map-section">IP Locations</a>
+    </aside>
+
+    <main class="main" id="dashboard">
+
+        <header>
+            <div>
+                <h1>Security Dashboard</h1>
+                <p>Monitor and protect your website from brute-force attacks.</p>
+            </div>
+
+            <span class="status">● Security Monitor</span>
+        </header>
+
+        <section class="stats">
+            <article>
+                <p>Total Attempts</p>
+                <h2 id="totalAttempts">0</h2>
+            </article>
+
+            <article>
+                <p>Failed Logins</p>
+                <h2 id="failedAttempts">0</h2>
+            </article>
+
+            <article>
+                <p>Successful Logins</p>
+                <h2 id="successfulAttempts">0</h2>
+            </article>
+
+            <article>
+                <p>Blocked IPs</p>
+                <h2 id="blockedCount">0</h2>
+            </article>
+        </section>
+
+        <section class="panel" id="attempts">
+            <h2>Recent Login Activity</h2>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>IP Address</th>
+                            <th>Browser</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="attemptsTable">
+                        <tr>
+                            <td colspan="6">Loading records...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel" id="suspicious">
+            <h2>Suspicious IP Addresses</h2>
+            <div id="suspiciousList">Loading...</div>
+        </section>
+
+        <section class="panel" id="map-section">
+            <h2>IP Location Map</h2>
+            <p class="map-description">
+                Approximate locations of recorded login attempts.
+            </p>
+            <div id="mapPlaceholder"></div>
+        </section>
+
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>

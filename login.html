@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureWatch | Login</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 420px;
+            background: #111827;
+            border: 1px solid #263247;
+            border-radius: 16px;
+            padding: 35px;
+        }
+
+        .auth-box h1 {
+            color: #38bdf8;
+            margin-bottom: 10px;
+        }
+
+        .auth-box p {
+            color: #94a3b8;
+            margin-bottom: 25px;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 15px;
+            border: 1px solid #263247;
+            border-radius: 8px;
+            background: #0b1120;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .auth-box button {
+            width: 100%;
+            padding: 13px;
+            background: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .switch {
+            margin-top: 20px;
+            text-align: center;
+            color: #38bdf8;
+            cursor: pointer;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-box">
+
+        <h1>SecureWatch</h1>
+        <p id="subtitle">Login to your account</p>
+
+        <form id="authForm">
+
+            <input
+                type="text"
+                id="fullName"
+                placeholder="Full Name"
+                autocomplete="name"
+                maxlength="100"
+                hidden
+            >
+
+            <input
+    type="text"
+    id="username"
+    placeholder="Username"
+    autocomplete="username"
+    minlength="3"
+    maxlength="30"
+    required
+>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                minlength="8"
+                required
+            >
+
+            <button type="submit" id="submitBtn">
+                Login
+            </button>
+
+        </form>
+
+        <div class="switch" id="switchMode">
+            Don't have an account? Register
+        </div>
+
+        <div id="message" role="status"></div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

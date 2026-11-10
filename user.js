@@ -12,7 +12,7 @@ async function loadUserDashboard() {
         await db.auth.getSession();
 
     if (sessionError || !session) {
-        window.location.href = "login.html";
+        window.location.replace("login.html");
         return;
     }
 
@@ -23,20 +23,19 @@ async function loadUserDashboard() {
         .single();
 
     if (error || !profile) {
-        alert("Unable to load your account.");
         await db.auth.signOut();
-        window.location.href = "login.html";
+        window.location.replace("login.html");
         return;
     }
 
     if (profile.role === "admin") {
-        window.location.href = "index.html";
+        window.location.replace("index.html");
         return;
     }
 
     if (profile.role !== "user") {
         await db.auth.signOut();
-        window.location.href = "login.html";
+        window.location.replace("login.html");
         return;
     }
 
@@ -50,9 +49,28 @@ async function loadUserDashboard() {
         profile.role;
 }
 
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-    await db.auth.signOut();
-    window.location.href = "login.html";
-});
+// LOGOUT
+async function logout() {
+    const button = document.getElementById("logoutBtn");
 
-loadUserDashboard();
+    if (button) button.disabled = true;
+
+    const { error } = await db.auth.signOut();
+
+    if (error) {
+        console.error("Logout error:", error);
+        alert("Logout failed. Please try again.");
+
+        if (button) button.disabled = false;
+        return;
+    }
+
+    window.location.replace("login.html");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("logoutBtn")
+        ?.addEventListener("click", logout);
+
+    loadUserDashboard();
+});

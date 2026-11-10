@@ -1,51 +1,23 @@
 
 const SUPABASE_URL = "https://udxotjgeuwklzlqvdrux.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_lJmjV5s_B8X8J6ZEH9rKkA_NK0aFu8k";
+const SUPABASE_ANON_KEY = "sb_publishable_lJmjV5s_B8X8J6ZEH9rKk";
 
 const db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
 );
 
-let isRegister = false;
-
 const form = document.getElementById("authForm");
 const message = document.getElementById("message");
 const submitBtn = document.getElementById("submitBtn");
-const switchMode = document.getElementById("switchMode");
-
-const fullNameInput = document.getElementById("fullName");
 const usernameInput = document.getElementById("username");
-// Automatically remove spaces from username
+const passwordInput = document.getElementById("password");
+
 usernameInput.addEventListener("input", () => {
     usernameInput.value = usernameInput.value.replace(/\s/g, "");
 });
-const passwordInput = document.getElementById("password");
 
-switchMode.addEventListener("click", () => {
-    isRegister = !isRegister;
-
-    fullNameInput.hidden = !isRegister;
-    fullNameInput.required = isRegister;
-    fullNameInput.style.display = isRegister ? "block" : "none";
-
-    document.getElementById("subtitle").textContent =
-        isRegister ? "Create your account" : "Login to your account";
-
-    submitBtn.textContent = isRegister ? "Register" : "Login";
-
-    switchMode.textContent = isRegister
-        ? "Already have an account? Login"
-        : "Don't have an account? Register";
-
-    passwordInput.autocomplete = isRegister
-        ? "new-password"
-        : "current-password";
-
-    message.textContent = "";
-});
-
-async function functionErrorMessage(error) {
+async function getErrorMessage(error) {
     try {
         if (error.context instanceof Response) {
             const result = await error.context.clone().json();
@@ -59,7 +31,6 @@ async function functionErrorMessage(error) {
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const fullName = fullNameInput.value.trim();
     const username = usernameInput.value.trim().toLowerCase();
     const password = passwordInput.value;
 
@@ -73,74 +44,48 @@ form.addEventListener("submit", async (event) => {
             );
         }
 
-        if (isRegister) {
-            if (fullName.length < 2) {
-                throw new Error("Please enter your full name.");
+        const { data, error } = await db.functions.invoke(
+            "login-monitor",
+            {
+                body: { username, password }
             }
+        );
 
-            if (password.length < 8) {
-                throw new Error("Password must be at least 8 characters.");
-            }
+        if (error) {
+            throw new Error(await getErrorMessage(error));
+        }
 
-            const { data, error } = await db.functions.invoke(
-                "register-user",
-                {
-                    body: { fullName, username, password }
-                }
-            );
+        if (!data?.session) {
+            throw new Error(data?.error || "Login failed.");
+        }
 
-            if (error) {
-                throw new Error(await functionErrorMessage(error));
-            }
+        const { error: sessionError } = await db.auth.setSession({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token
+        });
 
-            if (!data?.success) {
-                throw new Error(data?.error || "Registration failed.");
-            }
+        if (sessionError) throw sessionError;
 
-            message.textContent =
-                "Account created! You can now log in.";
+        const { data: { session } } = await db.auth.getSession();
 
-            isRegister = false;
-            fullNameInput.hidden = true;
-            fullNameInput.required = false;
-            fullNameInput.style.display = "none";
+        const { data: profile, error: profileError } = await db
+            .from("profiles")
+            .select("role")
+            .eq("id", session.user.id)
+            .single();
 
-            document.getElementById("subtitle").textContent =
-                "Login to your account";
+        if (profileError || !profile) {
+            await db.auth.signOut();
+            throw new Error("Unable to verify account role.");
+        }
 
-            submitBtn.textContent = "Login";
-            switchMode.textContent =
-                "Don't have an account? Register";
-
-            passwordInput.value = "";
-            fullNameInput.value = "";
-
-        } else {
-            const { data, error } = await db.functions.invoke(
-                "login-monitor",
-                {
-                    body: { username, password }
-                }
-            );
-
-            if (error) {
-                throw new Error(await functionErrorMessage(error));
-            }
-
-            if (!data?.session) {
-                throw new Error(data?.error || "Login failed.");
-            }
-
-            const { error: sessionError } =
-                await db.auth.setSession({
-                    access_token: data.session.access_token,
-                    refresh_token: data.session.refresh_token
-                });
-
-            if (sessionError) throw sessionError;
-
-            message.textContent = "Login successful!";
+        if (profile.role === "admin") {
             window.location.href = "index.html";
+        } else if (profile.role === "user") {
+            window.location.href = "user.html";
+        } else {
+            await db.auth.signOut();
+            throw new Error("Invalid account role.");
         }
 
     } catch (error) {

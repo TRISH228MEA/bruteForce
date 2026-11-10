@@ -55,13 +55,6 @@
             cursor: pointer;
         }
 
-        .switch {
-            margin-top: 20px;
-            text-align: center;
-            color: #38bdf8;
-            cursor: pointer;
-        }
-
         #message {
             margin-top: 15px;
             font-size: 13px;
@@ -77,28 +70,25 @@
     <div class="auth-box">
 
         <h1>SecureWatch</h1>
-        <p id="subtitle">Login to your account</p>
+        <p>Admin Login</p>
 
         <form id="authForm">
 
             <input
                 type="text"
                 id="fullName"
-                placeholder="Full Name"
-                autocomplete="name"
-                maxlength="100"
                 hidden
             >
 
             <input
-    type="text"
-    id="username"
-    placeholder="Username"
-    autocomplete="username"
-    minlength="3"
-    maxlength="30"
-    required
->
+                type="text"
+                id="username"
+                placeholder="Username"
+                autocomplete="username"
+                minlength="3"
+                maxlength="30"
+                required
+            >
 
             <input
                 type="password"
@@ -115,9 +105,8 @@
 
         </form>
 
-        <div class="switch" id="switchMode">
-            Don't have an account? Register
-        </div>
+        <!-- Hidden for compatibility with existing auth.js -->
+        <div id="switchMode" hidden></div>
 
         <div id="message" role="status"></div>
 

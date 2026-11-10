@@ -16,6 +16,10 @@ const switchMode = document.getElementById("switchMode");
 
 const fullNameInput = document.getElementById("fullName");
 const usernameInput = document.getElementById("username");
+// Automatically remove spaces from username
+usernameInput.addEventListener("input", () => {
+    usernameInput.value = usernameInput.value.replace(/\s/g, "");
+});
 const passwordInput = document.getElementById("password");
 
 switchMode.addEventListener("click", () => {

@@ -7,7 +7,7 @@ const db = window.supabase.createClient(
     SUPABASE_ANON_KEY
 );
 
-// MAP
+// MAP INITIALIZATION
 const map = L.map("mapPlaceholder").setView([12.8797, 121.7740], 5);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -16,7 +16,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 const markerLayer = L.layerGroup().addTo(map);
 
-// ADMIN ACCESS
+// ADMIN ACCESS CHECK
 async function checkAdminAccess() {
     const { data: { session }, error } = await db.auth.getSession();
 
@@ -31,13 +31,20 @@ async function checkAdminAccess() {
         .eq("id", session.user.id)
         .single();
 
-    if (profileError || profile?.role !== "admin") {
-        if (profile?.role === "user") {
+    if (profileError || !profile) {
+        await db.auth.signOut({ scope: "local" });
+        window.location.replace("login.html");
+        return false;
+    }
+
+    if (profile.role !== "admin") {
+        if (profile.role === "user") {
             window.location.replace("user.html");
         } else {
-            await db.auth.signOut();
+            await db.auth.signOut({ scope: "local" });
             window.location.replace("login.html");
         }
+
         return false;
     }
 
@@ -48,14 +55,24 @@ async function checkAdminAccess() {
 async function logout() {
     const button = document.getElementById("logoutBtn");
 
-    if (button) button.disabled = true;
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Logging out...";
+    }
 
-    const { error } = await db.auth.signOut();
+    const { error } = await db.auth.signOut({
+        scope: "local"
+    });
 
     if (error) {
         console.error("Logout error:", error);
-        alert("Logout failed. Please try again.");
-        if (button) button.disabled = false;
+        alert("Unable to logout. Please try again.");
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "Logout";
+        }
+
         return;
     }
 
@@ -71,9 +88,9 @@ async function loadDashboard() {
         .limit(50);
 
     if (error) {
-        console.error(error);
+        console.error("Login attempts error:", error);
         document.getElementById("attemptsTable").textContent =
-            "Unable to load records.";
+            "Unable to load records. Check Supabase permissions.";
         return;
     }
 
@@ -127,6 +144,7 @@ async function loadDashboard() {
 
     await loadSuspiciousIPs();
     await loadBlockedIPs();
+
     addLoginMarkers(records);
 }
 
@@ -139,7 +157,7 @@ async function loadSuspiciousIPs() {
         .select("*");
 
     if (error) {
-        console.error(error);
+        console.error("Suspicious IP error:", error);
         container.textContent = "Unable to load suspicious IP records.";
         return;
     }
@@ -174,7 +192,7 @@ async function loadBlockedIPs() {
         .gt("blocked_until", new Date().toISOString());
 
     if (error) {
-        console.error(error);
+        console.error("Blocked IP error:", error);
         document.getElementById("blockedCount").textContent = "—";
         return;
     }
@@ -197,20 +215,16 @@ function addLoginMarkers(records) {
             Number.isFinite(latitude) &&
             Number.isFinite(longitude)
         ) {
-            const marker = L.marker([latitude, longitude])
-                .addTo(markerLayer);
-
-            const location = [
-                record.city,
-                record.region,
-                record.country
-            ].filter(Boolean).join(", ");
-
-            marker.bindPopup(`
-                <b>IP:</b> ${escapeHTML(record.ip_address || "Unknown")}<br>
-                <b>Location:</b> ${escapeHTML(location || "Unknown")}<br>
-                <b>Status:</b> ${escapeHTML(record.status || "Unknown")}
-            `);
+            L.marker([latitude, longitude])
+                .addTo(markerLayer)
+                .bindPopup(`
+                    <b>IP:</b> ${escapeHTML(record.ip_address || "Unknown")}<br>
+                    <b>Location:</b> ${escapeHTML(
+                        [record.city, record.region, record.country]
+                            .filter(Boolean).join(", ") || "Unknown"
+                    )}<br>
+                    <b>Status:</b> ${escapeHTML(record.status || "Unknown")}
+                `);
         }
     });
 }
@@ -226,7 +240,7 @@ function escapeHTML(value) {
     })[character]);
 }
 
-// START
+// START DASHBOARD
 document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("logoutBtn")
         ?.addEventListener("click", logout);

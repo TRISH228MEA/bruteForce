@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureWatch | User Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h2>🛡️ SecureWatch</h2>
+        <p class="side-label">USER PORTAL</p>
+        <a class="active" href="user.html">My Dashboard</a>
+    </aside>
+
+    <main class="main">
+
+        <header>
+            <div>
+                <h1>User Dashboard</h1>
+                <p>Welcome to your SecureWatch account.</p>
+            </div>
+
+            <button id="logoutBtn" type="button">Logout</button>
+        </header>
+
+        <section class="stats">
+            <article>
+                <p>Account Status</p>
+                <h2>Active</h2>
+            </article>
+
+            <article>
+                <p>Account Type</p>
+                <h2>User</h2>
+            </article>
+        </section>
+
+        <section class="panel">
+            <h2>My Account</h2>
+
+            <p><strong>Full Name:</strong> <span id="fullName">Loading...</span></p>
+            <p><strong>Username:</strong> <span id="username">Loading...</span></p>
+            <p><strong>Role:</strong> <span id="role">Loading...</span></p>
+        </section>
+
+    </main>
+
+    <script src="user.js"></script>
+
+</body>
+</html>

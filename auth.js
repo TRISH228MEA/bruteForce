@@ -89,9 +89,13 @@ form.addEventListener("submit", async (event) => {
                 }
             );
 
-            if (error) {
-                throw new Error(await getErrorMessage(error));
-            }
+           if (error) {
+    console.error("EDGE FUNCTION ERROR:", error);
+
+    const details = await getErrorMessage(error);
+
+    throw new Error(details);
+}
 
             if (!data?.success) {
                 throw new Error(data?.error || "Registration failed.");

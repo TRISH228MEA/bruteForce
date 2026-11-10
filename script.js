@@ -1,4 +1,8 @@
 
+// ==========================================
+// SECUREWATCH - ADMIN DASHBOARD
+// ==========================================
+
 // SUPABASE CONNECTION
 const SUPABASE_URL = "https://udxotjgeuwklzlqvdrux.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_lJmjV5s_B8X8J6ZEH9rKkA_NK0aFu8k";
@@ -8,8 +12,14 @@ const db = window.supabase.createClient(
     SUPABASE_ANON_KEY
 );
 
+// ==========================================
 // MAP INITIALIZATION
-const map = L.map("mapPlaceholder").setView([12.8797, 121.7740], 5);
+// ==========================================
+
+const map = L.map("mapPlaceholder").setView(
+    [12.8797, 121.7740],
+    5
+);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors"
@@ -17,8 +27,12 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 const markerLayer = L.layerGroup().addTo(map);
 
+// ==========================================
 // ADMIN ACCESS CHECK
+// ==========================================
+
 async function checkAdminAccess() {
+
     const { data: { session }, error: sessionError } =
         await db.auth.getSession();
 
@@ -33,18 +47,71 @@ async function checkAdminAccess() {
         .eq("id", session.user.id)
         .single();
 
-    if (error || profile?.role !== "admin") {
-        await db.auth.signOut();
-        alert("Access denied. Admin only.");
+    if (error || !profile) {
         window.location.href = "login.html";
+        return false;
+    }
+
+    if (profile.role !== "admin") {
+        window.location.href = "user.html";
         return false;
     }
 
     return true;
 }
 
+// ==========================================
+// LOGOUT
+// ==========================================
+
+async function logout() {
+
+    const logoutButtons = document.querySelectorAll(
+        "#logoutBtn, #logout"
+    );
+
+    logoutButtons.forEach(button => {
+        button.disabled = true;
+    });
+
+    const { error } = await db.auth.signOut();
+
+    if (error) {
+        console.error("Logout error:", error);
+
+        logoutButtons.forEach(button => {
+            button.disabled = false;
+        });
+
+        alert("Unable to logout. Please try again.");
+        return;
+    }
+
+    window.location.replace("login.html");
+}
+
+// Connect existing logout button
+document.addEventListener("DOMContentLoaded", () => {
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    const logout = document.getElementById("logout");
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", logout);
+    }
+
+    if (logout) {
+        logout.addEventListener("click", logout);
+    }
+
+});
+
+// ==========================================
 // LOAD DASHBOARD
+// ==========================================
+
 async function loadDashboard() {
+
     const { data: attempts, error } = await db
         .from("login_attempts")
         .select("*")
@@ -52,9 +119,12 @@ async function loadDashboard() {
         .limit(50);
 
     if (error) {
+
         console.error("Login attempts error:", error);
+
         document.getElementById("attemptsTable").textContent =
             "Unable to load records. Check Supabase permissions.";
+
         return;
     }
 
@@ -69,25 +139,35 @@ async function loadDashboard() {
     document.getElementById("successfulAttempts").textContent =
         records.filter(a => a.status === "success").length;
 
+    // ======================================
+    // LOGIN ATTEMPTS TABLE
+    // ======================================
+
     const table = document.getElementById("attemptsTable");
+
     table.replaceChildren();
 
     if (records.length === 0) {
+
         const row = document.createElement("tr");
         const cell = document.createElement("td");
-        cell.colSpan = 6;
+
+        cell.colSpan = 7;
         cell.textContent = "No login records found.";
+
         row.appendChild(cell);
         table.appendChild(row);
     }
 
     records.forEach(a => {
+
         const row = document.createElement("tr");
 
         const values = [
             a.full_name || a.username,
             a.ip_address,
             a.browser,
+            a.isp || "Unknown",
             [a.city, a.region, a.country]
                 .filter(Boolean).join(", "),
             a.status,
@@ -97,22 +177,34 @@ async function loadDashboard() {
         ];
 
         values.forEach(value => {
+
             const cell = document.createElement("td");
+
             cell.textContent = value || "Unknown";
+
             row.appendChild(cell);
+
         });
 
         table.appendChild(row);
+
     });
 
+    // Load additional monitoring information
     await loadSuspiciousIPs();
     await loadBlockedIPs();
 
+    // Add location markers
     addLoginMarkers(records);
+
 }
 
+// ==========================================
 // LOAD SUSPICIOUS IPs
+// ==========================================
+
 async function loadSuspiciousIPs() {
+
     const container = document.getElementById("suspiciousList");
 
     const { data, error } = await db
@@ -120,55 +212,82 @@ async function loadSuspiciousIPs() {
         .select("*");
 
     if (error) {
+
         console.error("Suspicious IP error:", error);
-        container.textContent = "Unable to load suspicious IP records.";
+
+        container.textContent =
+            "Unable to load suspicious IP records.";
+
         return;
     }
 
     container.replaceChildren();
 
     if (!data || data.length === 0) {
-        container.textContent = "No suspicious IP addresses found.";
+
+        container.textContent =
+            "No suspicious IP addresses found.";
+
         return;
     }
 
     data.forEach(ip => {
+
         const item = document.createElement("div");
+
         item.className = "suspicious-item";
 
         const title = document.createElement("strong");
+
         title.textContent = ip.ip_address || "Unknown IP";
 
         const details = document.createElement("p");
+
         details.textContent =
             "Failed attempts: " + (ip.failed_attempts || 0);
 
         item.append(title, details);
+
         container.appendChild(item);
+
     });
+
 }
 
+// ==========================================
 // LOAD BLOCKED IPs
+// ==========================================
+
 async function loadBlockedIPs() {
+
     const { data, error } = await db
         .from("ip_blocks")
         .select("id");
 
     if (error) {
+
         console.error("Blocked IP error:", error);
+
         document.getElementById("blockedCount").textContent = "—";
+
         return;
     }
 
     document.getElementById("blockedCount").textContent =
         data.length;
+
 }
 
+// ==========================================
 // MAP MARKERS
+// ==========================================
+
 function addLoginMarkers(records) {
+
     markerLayer.clearLayers();
 
     records.forEach(record => {
+
         const latitude = Number(record.latitude);
         const longitude = Number(record.longitude);
 
@@ -178,36 +297,59 @@ function addLoginMarkers(records) {
             Number.isFinite(latitude) &&
             Number.isFinite(longitude)
         ) {
+
+            const popupContent = `
+                <b>Username:</b> ${escapeHTML(record.username || "Unknown")}<br>
+                <b>IP:</b> ${escapeHTML(record.ip_address || "Unknown")}<br>
+                <b>ISP:</b> ${escapeHTML(record.isp || "Unknown")}<br>
+                <b>Location:</b> ${escapeHTML(
+                    [record.city, record.region, record.country]
+                        .filter(Boolean).join(", ") || "Unknown"
+                )}<br>
+                <b>Browser:</b> ${escapeHTML(record.browser || "Unknown")}<br>
+                <b>Status:</b> ${escapeHTML(record.status || "Unknown")}
+            `;
+
             L.marker([latitude, longitude])
                 .addTo(markerLayer)
-                .bindPopup(`
-                    <b>IP:</b> ${escapeHTML(record.ip_address || "Unknown")}<br>
-                    <b>Location:</b> ${escapeHTML(
-                        [record.city, record.region, record.country]
-                            .filter(Boolean).join(", ") || "Unknown"
-                    )}<br>
-                    <b>Status:</b> ${escapeHTML(record.status || "Unknown")}
-                `);
+                .bindPopup(popupContent);
+
         }
+
     });
+
 }
 
+// ==========================================
 // ESCAPE HTML
+// ==========================================
+
 function escapeHTML(value) {
+
     return String(value).replace(/[&<>"']/g, character => ({
+
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;"
+
     })[character]);
+
 }
 
+// ==========================================
 // START DASHBOARD ONLY IF ADMIN
+// ==========================================
+
 (async function startDashboard() {
+
     const allowed = await checkAdminAccess();
 
     if (allowed) {
+
         await loadDashboard();
+
     }
+
 })();

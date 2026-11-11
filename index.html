@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>SecureWatch | Admin Dashboard</title>
 
     <link rel="stylesheet" href="style.css">
@@ -11,65 +12,280 @@
     <link rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        .sidebar h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar h2 i {
+            color: #38bdf8;
+        }
+
+        .sidebar a {
+            gap: 13px;
+        }
+
+        .sidebar a i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .sidebar a.active {
+            background: rgba(56,189,248,.12);
+            border-left: 3px solid #38bdf8;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 25px;
+            left: 20px;
+            right: 20px;
+            padding: 15px;
+            background: #111e32;
+            border: 1px solid #243650;
+            border-radius: 12px;
+            color: #91a2b9;
+            font-size: 11px;
+        }
+
+        .sidebar-footer i {
+            color: #22c55e;
+            margin-right: 7px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .stats article {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 11px;
+            background: rgba(56,189,248,.12);
+            color: #38bdf8;
+            margin-bottom: 18px;
+        }
+
+        .stats article:nth-child(2) .stat-icon {
+            color: #f87171;
+            background: rgba(248,113,113,.12);
+        }
+
+        .stats article:nth-child(3) .stat-icon {
+            color: #22c55e;
+            background: rgba(34,197,94,.12);
+        }
+
+        .stats article:nth-child(4) .stat-icon {
+            color: #fbbf24;
+            background: rgba(251,191,36,.12);
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .section-heading h2 {
+            margin-bottom: 0;
+        }
+
+        .section-tag {
+            color: #38bdf8;
+            background: rgba(56,189,248,.09);
+            border: 1px solid rgba(56,189,248,.2);
+            border-radius: 20px;
+            padding: 7px 12px;
+            font-size: 10px;
+        }
+
+        .table-wrap {
+            border-radius: 9px;
+        }
+
+        #attemptsTable td[colspan] {
+            text-align: center;
+            padding: 30px;
+            color: #91a2b9;
+        }
+
+        @media(max-width:900px) {
+            .sidebar-footer {
+                position: static;
+                margin-top: 25px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-    <aside class="sidebar">
-        <h2>🛡️ SecureWatch</h2>
-        <p class="side-label">SECURITY MONITOR</p>
+    <!-- SIDEBAR -->
 
-        <a class="active" href="#dashboard">Dashboard</a>
-        <a href="#attempts">Login Attempts</a>
-        <a href="#suspicious">Suspicious IPs</a>
-        <a href="#map-section">IP Locations</a>
+    <aside class="sidebar">
+
+        <h2>
+            <i class="fa-solid fa-shield-halved"></i>
+            SecureWatch
+        </h2>
+
+        <p class="side-label">MAIN MENU</p>
+
+        <a class="active" href="#dashboard">
+            <i class="fa-solid fa-chart-pie"></i>
+            Dashboard
+        </a>
+
+        <a href="#attempts">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            Login Attempts
+        </a>
+
+        <a href="#suspicious">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Suspicious IPs
+        </a>
+
+        <a href="#map-section">
+            <i class="fa-solid fa-location-dot"></i>
+            IP Locations
+        </a>
+
+        <div class="sidebar-footer">
+            <i class="fa-solid fa-circle-check"></i>
+            Security Monitoring Active
+        </div>
+
     </aside>
+
+
+    <!-- MAIN CONTENT -->
 
     <main class="main" id="dashboard">
 
+        <!-- HEADER -->
+
         <header>
-            <div>
-                <h1>Security Dashboard</h1>
-                <p>Monitor and protect your website from brute-force attacks.</p>
-            </div>
 
             <div>
-                <span class="status">● Security Monitor</span>
+                <p style="color:#38bdf8; font-size:11px; font-weight:700; letter-spacing:1.5px;">
+                    SECURITY OVERVIEW
+                </p>
 
-               <button type="button" id="logoutBtn">Logout</button>
+                <h1>Admin Dashboard</h1>
+
+                <p>
+                    Monitor login activities and detect suspicious access.
+                </p>
             </div>
+
+            <div class="header-actions">
+
+                <span class="status">
+                    <i class="fa-solid fa-circle"></i>
+                    Security Monitor
+                </span>
+
+                <button type="button" id="logoutBtn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </button>
+
+            </div>
+
         </header>
+
+
+        <!-- STATISTICS -->
 
         <section class="stats">
 
             <article>
-                <p>Total Attempts</p>
+                <div class="stat-icon">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+
+                <p>Total Login Attempts</p>
                 <h2 id="totalAttempts">0</h2>
             </article>
 
+
             <article>
+                <div class="stat-icon">
+                    <i class="fa-solid fa-shield-virus"></i>
+                </div>
+
                 <p>Failed Logins</p>
                 <h2 id="failedAttempts">0</h2>
             </article>
 
+
             <article>
+                <div class="stat-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
                 <p>Successful Logins</p>
                 <h2 id="successfulAttempts">0</h2>
             </article>
 
+
             <article>
+                <div class="stat-icon">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+
                 <p>Blocked IPs</p>
                 <h2 id="blockedCount">0</h2>
             </article>
 
         </section>
 
+
+        <!-- LOGIN ACTIVITY -->
+
         <section class="panel" id="attempts">
 
-            <h2>Recent Login Activity</h2>
+            <div class="section-heading">
+
+                <h2>
+                    <i class="fa-solid fa-clock-rotate-left"
+                    style="color:#38bdf8; margin-right:8px;"></i>
+                    Recent Login Activity
+                </h2>
+
+                <span class="section-tag">LATEST RECORDS</span>
+
+            </div>
 
             <div class="table-wrap">
+
                 <table>
 
                     <thead>
@@ -85,32 +301,64 @@
                     </thead>
 
                     <tbody id="attemptsTable">
+
                         <tr>
-                            <td colspan="7">Loading records...</td>
+                            <td colspan="7">
+                                Loading records...
+                            </td>
                         </tr>
+
                     </tbody>
 
                 </table>
+
             </div>
 
         </section>
+
+
+        <!-- SUSPICIOUS IPS -->
 
         <section class="panel" id="suspicious">
 
-            <h2>Suspicious IP Addresses</h2>
+            <div class="section-heading">
+
+                <h2>
+                    <i class="fa-solid fa-triangle-exclamation"
+                    style="color:#f87171; margin-right:8px;"></i>
+                    Suspicious IP Addresses
+                </h2>
+
+                <span class="section-tag">THREAT MONITORING</span>
+
+            </div>
 
             <div id="suspiciousList">
-                Loading...
+                Loading suspicious IP records...
             </div>
 
         </section>
 
+
+        <!-- IP LOCATION MAP -->
+
         <section class="panel" id="map-section">
 
-            <h2>IP Location Map</h2>
+            <div class="section-heading">
+
+                <h2>
+                    <i class="fa-solid fa-map-location-dot"
+                    style="color:#38bdf8; margin-right:8px;"></i>
+                    IP Location Map
+                </h2>
+
+                <span class="section-tag">GEOLOCATION</span>
+
+            </div>
 
             <p class="map-description">
-                Approximate locations of recorded login attempts.
+                Approximate geographical locations of recorded login attempts.
+                IP-based locations may not represent an exact physical address.
             </p>
 
             <div id="mapPlaceholder"></div>
@@ -119,7 +367,11 @@
 
     </main>
 
+
+    <!-- SCRIPTS -->
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script src="script.js"></script>
 
 </body>

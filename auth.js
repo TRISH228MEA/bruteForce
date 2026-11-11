@@ -374,7 +374,7 @@ form.addEventListener("submit", async (event) => {
 
 });
  document.getElementById("submitBtn");
-const switchMode = document.getElementById("switchMode");
+
 
 const fullNameInput = document.getElementById("fullName");
 const usernameInput = document.getElementById("username");

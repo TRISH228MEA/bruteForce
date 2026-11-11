@@ -7,9 +7,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_lJmjV5s_B8X8J6ZEH9rKkA_NK0aFu8k";
 // ACCESSGUARD - AUTHENTICATION SYSTEM
 // ==========================================
 
-const SUPABASE_URL = "https://udxotjgeuwklzlqvdrux.supabase.co";
 
-const SUPABASE_ANON_KEY = "sb_publishable_lJmjV5s_B8X8J6ZEH9rKk";
 
 const db = window.supabase.createClient(
     SUPABASE_URL,

@@ -157,6 +157,40 @@
             cursor: pointer;
         }
 
+switchMode.addEventListener("click", () => {
+
+    isRegister = !isRegister;
+
+    fullNameInput.hidden = !isRegister;
+    fullNameInput.required = isRegister;
+    fullNameInput.style.display = isRegister ? "block" : "none";
+
+    document.getElementById("formTitle").textContent =
+        isRegister ? "Create Account" : "Welcome Back";
+
+    document.getElementById("subtitle").textContent =
+        isRegister
+            ? "Create your AccessGuard account"
+            : "Login to your account";
+
+    submitBtn.textContent =
+        isRegister ? "Register" : "Login";
+
+    switchMode.textContent =
+        isRegister
+            ? "Already have an account? Login"
+            : "Don't have an account? Register";
+
+    passwordInput.autocomplete =
+        isRegister ? "new-password" : "current-password";
+
+    usernameInput.placeholder =
+        "Username or Email";
+
+    message.textContent = "";
+
+});
+
         .switch:hover {
             color: #7dd3fc;
             text-decoration: underline;

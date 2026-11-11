@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,123 +8,280 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
         body {
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
+            padding: 25px;
+            background:
+                radial-gradient(circle at 15% 20%, #12345b 0, transparent 35%),
+                radial-gradient(circle at 85% 80%, #102d4b 0, transparent 35%),
+                #070d19;
+            color: white;
         }
 
-        .auth-box {
+        .auth-container {
             width: 100%;
-            max-width: 420px;
-            background: #111827;
-            border: 1px solid #263247;
-            border-radius: 16px;
-            padding: 35px;
+            max-width: 1050px;
+            min-height: 620px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: #0e1728;
+            border: 1px solid #263b59;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0,0,0,.5);
         }
 
-        .auth-box h1 {
+        .brand-panel {
+            padding: 65px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background:
+                linear-gradient(145deg, rgba(14,165,233,.18), transparent 65%),
+                #101f35;
+            border-right: 1px solid #263b59;
+        }
+
+        .logo {
+            width: 65px;
+            height: 65px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            background: #123d61;
             color: #38bdf8;
+            font-size: 32px;
+            margin-bottom: 28px;
+        }
+
+        .brand-panel h1 {
+            font-size: 38px;
+            letter-spacing: -1px;
+            margin-bottom: 15px;
+        }
+
+        .brand-panel h1 span {
+            color: #38bdf8;
+        }
+
+        .brand-panel p {
+            color: #9aacc4;
+            line-height: 1.8;
+            max-width: 380px;
+        }
+
+        .security-status {
+            margin-top: 45px;
+            padding: 15px;
+            border: 1px solid #244665;
+            background: rgba(14,165,233,.07);
+            border-radius: 12px;
+            color: #7dd3fc;
+            font-size: 13px;
+        }
+
+        .auth-panel {
+            padding: 65px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-panel h2 {
+            font-size: 29px;
             margin-bottom: 10px;
         }
 
-        .auth-box p {
+        #subtitle {
             color: #94a3b8;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
+            font-size: 14px;
         }
 
         .auth-box input {
             width: 100%;
-            padding: 13px;
-            margin-bottom: 15px;
-            border: 1px solid #263247;
-            border-radius: 8px;
-            background: #0b1120;
+            padding: 15px 16px;
+            margin-bottom: 17px;
+            border: 1px solid #2a3a52;
+            border-radius: 10px;
+            outline: none;
+            background: #091322;
             color: white;
-            box-sizing: border-box;
+            font-size: 14px;
+            transition: .2s;
         }
 
-        .auth-box button {
+        .auth-box input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56,189,248,.12);
+        }
+
+        .auth-box input::placeholder {
+            color: #718096;
+        }
+
+        #submitBtn {
             width: 100%;
-            padding: 13px;
-            background: #0284c7;
-            color: white;
+            padding: 15px;
+            margin-top: 8px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
             cursor: pointer;
+            transition: .2s;
+        }
+
+        #submitBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(2,132,199,.3);
         }
 
         .switch {
-            margin-top: 20px;
             text-align: center;
+            margin-top: 25px;
             color: #38bdf8;
+            font-size: 14px;
             cursor: pointer;
         }
 
+        .switch:hover {
+            color: #7dd3fc;
+            text-decoration: underline;
+        }
+
         #message {
-            margin-top: 15px;
+            min-height: 20px;
+            margin-top: 18px;
             font-size: 13px;
+            text-align: center;
+            color: #f87171;
         }
 
         [hidden] {
             display: none !important;
         }
+
+        @media (max-width: 750px) {
+            .auth-container {
+                max-width: 470px;
+                grid-template-columns: 1fr;
+            }
+
+            .brand-panel {
+                padding: 35px 30px;
+                border-right: none;
+                border-bottom: 1px solid #263b59;
+            }
+
+            .brand-panel h1 {
+                font-size: 30px;
+            }
+
+            .brand-panel p {
+                font-size: 13px;
+            }
+
+            .security-status {
+                margin-top: 20px;
+            }
+
+            .auth-panel {
+                padding: 40px 30px;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="auth-box">
 
-        <h1>SecureWatch</h1>
-        <p id="subtitle">Login to your account</p>
+    <div class="auth-container">
 
-        <form id="authForm">
+        <section class="brand-panel">
+            <div class="logo">⌑</div>
 
-            <input
-                type="text"
-                id="fullName"
-                placeholder="Full Name"
-                autocomplete="name"
-                maxlength="100"
-                hidden
-            >
+            <h1>Secure<span>Watch</span></h1>
 
-            <input
-    type="text"
-    id="username"
-    placeholder="Username"
-    autocomplete="username"
-    minlength="3"
-    maxlength="30"
-    required
->
+            <p>
+                Advanced Login Monitoring and Brute Force
+                Detection System. Monitor suspicious login
+                activities and protect your account.
+            </p>
 
-            <input
-                type="password"
-                id="password"
-                placeholder="Password"
-                autocomplete="current-password"
-                minlength="8"
-                required
-            >
+            <div class="security-status">
+                ● SECURITY MONITORING SYSTEM
+                <br><br>
+                Protecting accounts through intelligent
+                login activity monitoring.
+            </div>
+        </section>
 
-            <button type="submit" id="submitBtn">
-                Login
-            </button>
+        <section class="auth-panel auth-box">
 
-        </form>
+            <h2 id="formTitle">Welcome Back</h2>
 
-        <div class="switch" id="switchMode">
-            Don't have an account? Register
-        </div>
+            <p id="subtitle">Login to your account</p>
 
-        <div id="message" role="status"></div>
+            <form id="authForm">
+
+                <input
+                    type="text"
+                    id="fullName"
+                    placeholder="Full Name"
+                    autocomplete="name"
+                    maxlength="100"
+                    hidden
+                >
+
+                <input
+                    type="text"
+                    id="username"
+                    placeholder="Username"
+                    autocomplete="username"
+                    minlength="3"
+                    maxlength="30"
+                    required
+                >
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    autocomplete="current-password"
+                    minlength="8"
+                    required
+                >
+
+                <button type="submit" id="submitBtn">
+                    Login
+                </button>
+
+            </form>
+
+            <div class="switch" id="switchMode">
+                Don't have an account? Register
+            </div>
+
+            <div id="message" role="status"></div>
+
+        </section>
 
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
+
 </body>
 </html>

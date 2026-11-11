@@ -376,9 +376,7 @@ form.addEventListener("submit", async (event) => {
  document.getElementById("submitBtn");
 
 
-const fullNameInput = document.getElementById("fullName");
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
+
 
 usernameInput.addEventListener("input", () => {
     usernameInput.value = usernameInput.value.replace(/\s/g, "");

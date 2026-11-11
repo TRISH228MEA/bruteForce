@@ -1,24 +1,22 @@
 
+// ==========================================
+// ACCESSGUARD AUTHENTICATION SYSTEM
+// ==========================================
+
 const SUPABASE_URL = "https://udxotjgeuwklzlqvdrux.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_lJmjV5s_B8X8J6ZEH9rKkA_NK0aFu8k";
 
-
-// ==========================================
-// ACCESSGUARD - AUTHENTICATION SYSTEM
-// ==========================================
-
-
+const SUPABASE_ANON_KEY = "sb_publishable_lJmjV5s_B8X8J6ZEH9rKk";
 
 const db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
 );
 
-let isRegister = false;
+// ==========================================
+// ELEMENTS
+// ==========================================
 
-// ==========================================
-// HTML ELEMENTS
-// ==========================================
+let isRegister = false;
 
 const form = document.getElementById("authForm");
 const message = document.getElementById("message");
@@ -30,15 +28,24 @@ const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
 
 // ==========================================
+// INITIAL SETTINGS
+// ==========================================
+
+fullNameInput.hidden = true;
+fullNameInput.required = false;
+fullNameInput.style.display = "none";
+
+// ==========================================
 // USERNAME INPUT
 // ==========================================
 
 usernameInput.addEventListener("input", () => {
-    usernameInput.value = usernameInput.value.replace(/\s/g, "");
+    usernameInput.value =
+        usernameInput.value.replace(/\s/g, "");
 });
 
 // ==========================================
-// VALIDATE USERNAME OR EMAIL
+// VALIDATION
 // ==========================================
 
 function validateUsernameOrEmail(value) {
@@ -68,9 +75,12 @@ switchMode.addEventListener("click", () => {
     fullNameInput.style.display =
         isRegister ? "block" : "none";
 
+    document.getElementById("formTitle").textContent =
+        isRegister ? "Create Account" : "Welcome Back";
+
     document.getElementById("subtitle").textContent =
         isRegister
-            ? "Create your account"
+            ? "Create your AccessGuard account"
             : "Login to your account";
 
     submitBtn.textContent =
@@ -83,6 +93,8 @@ switchMode.addEventListener("click", () => {
 
     passwordInput.autocomplete =
         isRegister ? "new-password" : "current-password";
+
+    usernameInput.placeholder = "Username or Email";
 
     message.textContent = "";
 
@@ -104,17 +116,17 @@ async function getErrorMessage(error) {
             if (result.error) {
                 return result.error;
             }
-
         }
 
-    } catch {}
+    } catch (e) {
+        console.error("Error reading response:", e);
+    }
 
     return error.message || "Something went wrong.";
-
 }
 
 // ==========================================
-// AUTHENTICATION FORM
+// AUTHENTICATION
 // ==========================================
 
 form.addEventListener("submit", async (event) => {
@@ -128,13 +140,14 @@ form.addEventListener("submit", async (event) => {
 
     const password = passwordInput.value;
 
+    message.textContent = "";
     submitBtn.disabled = true;
-    message.textContent = "Please wait...";
+    submitBtn.textContent = "Please wait...";
 
     try {
 
         // ==================================
-        // USERNAME / EMAIL VALIDATION
+        // VALIDATE USERNAME OR EMAIL
         // ==================================
 
         if (!validateUsernameOrEmail(username)) {
@@ -142,29 +155,24 @@ form.addEventListener("submit", async (event) => {
             throw new Error(
                 "Enter a valid username or email address."
             );
-
         }
 
         // ==================================
-        // REGISTRATION
+        // REGISTER
         // ==================================
 
         if (isRegister) {
 
             if (fullName.length < 2) {
-
                 throw new Error(
                     "Please enter your full name."
                 );
-
             }
 
             if (password.length < 8) {
-
                 throw new Error(
                     "Password must be at least 8 characters."
                 );
-
             }
 
             const { data, error } =
@@ -181,15 +189,11 @@ form.addEventListener("submit", async (event) => {
 
             if (error) {
 
-                console.error(
-                    "REGISTRATION ERROR:",
-                    error
-                );
+                console.error("REGISTER ERROR:", error);
 
                 throw new Error(
                     await getErrorMessage(error)
                 );
-
             }
 
             if (!data?.success) {
@@ -197,24 +201,24 @@ form.addEventListener("submit", async (event) => {
                 throw new Error(
                     data?.error || "Registration failed."
                 );
-
             }
-
-            // REGISTRATION SUCCESS
 
             message.style.color = "#22c55e";
 
             message.textContent =
-                "Account created! You can now log in.";
+                "Account created successfully! You can now log in.";
 
             isRegister = false;
 
+            fullNameInput.value = "";
             fullNameInput.hidden = true;
             fullNameInput.required = false;
             fullNameInput.style.display = "none";
-            fullNameInput.value = "";
 
             passwordInput.value = "";
+
+            document.getElementById("formTitle").textContent =
+                "Welcome Back";
 
             document.getElementById("subtitle").textContent =
                 "Login to your account";
@@ -224,310 +228,127 @@ form.addEventListener("submit", async (event) => {
             switchMode.textContent =
                 "Don't have an account? Register";
 
+            return;
         }
 
         // ==================================
         // LOGIN
         // ==================================
 
-        else {
-
-            const { data, error } =
-                await db.functions.invoke(
-                    "login-monitor",
-                    {
-                        body: {
-                            username,
-                            password
-                        }
-                    }
-                );
-
-            if (error) {
-
-                console.error(
-                    "LOGIN ERROR:",
-                    error
-                );
-
-                throw new Error(
-                    await getErrorMessage(error)
-                );
-
-            }
-
-            if (!data?.session) {
-
-                throw new Error(
-                    data?.error || "Login failed."
-                );
-
-            }
-
-            // ==================================
-            // SET SUPABASE SESSION
-            // ==================================
-
-            const { error: sessionError } =
-                await db.auth.setSession({
-
-                    access_token:
-                        data.session.access_token,
-
-                    refresh_token:
-                        data.session.refresh_token
-
-                });
-
-            if (sessionError) {
-                throw sessionError;
-            }
-
-            // ==================================
-            // GET CURRENT SESSION
-            // ==================================
-
-            const {
-                data: { session }
-            } = await db.auth.getSession();
-
-            if (!session) {
-
-                throw new Error(
-                    "Unable to verify login session."
-                );
-
-            }
-
-            // ==================================
-            // GET ACCOUNT ROLE
-            // ==================================
-
-            const {
-                data: profile,
-                error: profileError
-            } = await db
-
-                .from("profiles")
-
-                .select("role")
-
-                .eq("id", session.user.id)
-
-                .single();
-
-            if (profileError || !profile) {
-
-                await db.auth.signOut();
-
-                throw new Error(
-                    "Unable to verify account role."
-                );
-
-            }
-
-            // ==================================
-            // REDIRECT BASED ON ROLE
-            // ==================================
-
-            if (profile.role === "admin") {
-
-                window.location.href = "index.html";
-
-            }
-
-            else if (profile.role === "user") {
-
-                window.location.href = "user.html";
-
-            }
-
-            else {
-
-                await db.auth.signOut();
-
-                throw new Error(
-                    "Invalid account role."
-                );
-
-            }
-
-        }
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        message.style.color = "#f87171";
-
-        message.textContent = error.message;
-
-    }
-
-    finally {
-
-        submitBtn.disabled = false;
-
-    }
-
-});
- document.getElementById("submitBtn");
-
-
-
-
-usernameInput.addEventListener("input", () => {
-    usernameInput.value = usernameInput.value.replace(/\s/g, "");
-});
-
-switchMode.addEventListener("click", () => {
-    isRegister = !isRegister;
-
-    fullNameInput.hidden = !isRegister;
-    fullNameInput.required = isRegister;
-    fullNameInput.style.display = isRegister ? "block" : "none";
-
-    document.getElementById("subtitle").textContent =
-        isRegister ? "Create your account" : "Login to your account";
-
-    submitBtn.textContent = isRegister ? "Register" : "Login";
-
-    switchMode.textContent = isRegister
-        ? "Already have an account? Login"
-        : "Don't have an account? Register";
-
-    passwordInput.autocomplete = isRegister
-        ? "new-password"
-        : "current-password";
-
-    message.textContent = "";
-});
-
-async function getErrorMessage(error) {
-    try {
-        if (error.context instanceof Response) {
-            const result = await error.context.clone().json();
-            if (result.error) return result.error;
-        }
-    } catch {}
-
-    return error.message || "Something went wrong.";
-}
-
-form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const fullName = fullNameInput.value.trim();
-    const username = usernameInput.value.trim().toLowerCase();
-    const password = passwordInput.value;
-
-    submitBtn.disabled = true;
-    message.textContent = "Please wait...";
-
-    try {
-        if (!/^[a-z0-9_]{3,30}$/.test(username)) {
-            throw new Error(
-                "Username must be 3-30 characters using letters, numbers, or underscores."
-            );
-        }
-
-        if (isRegister) {
-            if (fullName.length < 2) {
-                throw new Error("Please enter your full name.");
-            }
-
-            if (password.length < 8) {
-                throw new Error("Password must be at least 8 characters.");
-            }
-
-            const { data, error } = await db.functions.invoke(
-                "register-user",
-                {
-                    body: { fullName, username, password }
-                }
-            );
-
-           if (error) {
-    console.error("EDGE FUNCTION ERROR:", error);
-
-    const details = await getErrorMessage(error);
-
-    throw new Error(details);
-}
-
-            if (!data?.success) {
-                throw new Error(data?.error || "Registration failed.");
-            }
-
-            message.textContent =
-                "Account created! You can now log in.";
-
-            isRegister = false;
-            fullNameInput.hidden = true;
-            fullNameInput.required = false;
-            fullNameInput.style.display = "none";
-            fullNameInput.value = "";
-            passwordInput.value = "";
-
-            document.getElementById("subtitle").textContent =
-                "Login to your account";
-
-            submitBtn.textContent = "Login";
-            switchMode.textContent =
-                "Don't have an account? Register";
-
-        } else {
-            const { data, error } = await db.functions.invoke(
+        const { data, error } =
+            await db.functions.invoke(
                 "login-monitor",
                 {
-                    body: { username, password }
+                    body: {
+                        username,
+                        password
+                    }
                 }
             );
 
-            if (error) {
-                throw new Error(await getErrorMessage(error));
-            }
+        if (error) {
 
-            if (!data?.session) {
-                throw new Error(data?.error || "Login failed.");
-            }
+            console.error("LOGIN ERROR:", error);
 
-            const { error: sessionError } = await db.auth.setSession({
+            throw new Error(
+                await getErrorMessage(error)
+            );
+        }
+
+        if (!data?.session) {
+
+            throw new Error(
+                data?.error || "Login failed."
+            );
+        }
+
+        // ==================================
+        // SET SESSION
+        // ==================================
+
+        const { error: sessionError } =
+            await db.auth.setSession({
                 access_token: data.session.access_token,
                 refresh_token: data.session.refresh_token
             });
 
-            if (sessionError) throw sessionError;
+        if (sessionError) {
+            throw sessionError;
+        }
 
-            const { data: { session } } = await db.auth.getSession();
+        // ==================================
+        // GET SESSION
+        // ==================================
 
-            const { data: profile, error: profileError } = await db
-                .from("profiles")
-                .select("role")
-                .eq("id", session.user.id)
-                .single();
+        const {
+            data: { session }
+        } = await db.auth.getSession();
 
-            if (profileError || !profile) {
-                await db.auth.signOut();
-                throw new Error("Unable to verify account role.");
-            }
+        if (!session) {
+            throw new Error(
+                "Unable to verify login session."
+            );
+        }
 
-            if (profile.role === "admin") {
-                window.location.href = "index.html";
-            } else if (profile.role === "user") {
-                window.location.href = "user.html";
-            } else {
-                await db.auth.signOut();
-                throw new Error("Invalid account role.");
-            }
+        // ==================================
+        // GET USER ROLE
+        // ==================================
+
+        const {
+            data: profile,
+            error: profileError
+        } = await db
+            .from("profiles")
+            .select("role")
+            .eq("id", session.user.id)
+            .single();
+
+        if (profileError || !profile) {
+
+            await db.auth.signOut();
+
+            throw new Error(
+                "Unable to verify account role."
+            );
+        }
+
+        // ==================================
+        // REDIRECT
+        // ==================================
+
+        if (profile.role === "admin") {
+
+            window.location.href = "index.html";
+
+        } else if (profile.role === "user") {
+
+            window.location.href = "user.html";
+
+        } else {
+
+            await db.auth.signOut();
+
+            throw new Error(
+                "Invalid account role."
+            );
         }
 
     } catch (error) {
-        console.error(error);
+
+        console.error("AUTHENTICATION ERROR:", error);
+
+        message.style.color = "#f87171";
         message.textContent = error.message;
+
     } finally {
+
         submitBtn.disabled = false;
+
+        if (isRegister) {
+            submitBtn.textContent = "Register";
+        } else {
+            submitBtn.textContent = "Login";
+        }
     }
+
 });
